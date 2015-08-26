@@ -3,7 +3,7 @@
 ; Randomness of enemy movement
 ; Enemy only trigger after colliding
 ;   - Try to move when turn comes
-
+; What will happen when pacman eat o
 
 include irvine32.inc
 include macros.inc
