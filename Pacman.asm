@@ -1,3 +1,10 @@
+; 214 dots
+; Game over when enemy col and row equal pacmanMov col and row
+; Randomness of enemy movement
+; Enemy only trigger after colliding
+;   - Try to move when turn comes
+
+
 include irvine32.inc
 include macros.inc
 INCLUDELIB user32.lib
@@ -19,11 +26,11 @@ movement ENDS
 
 elementInfo STRUCT
     col BYTE 26
-    row BYTE 8
+    row BYTE 9
     up BYTE 0
     down BYTE 0
     left BYTE 0
-    right BYTE 0
+    right BYTE 1
 elementInfo ENDS
 
 .data
@@ -63,29 +70,108 @@ elementInfo ENDS
     pacmanMov movement <1,0,0,0>
     
     noOfEnemy EQU 4
-    enemy elementInfo noOfEnemy DUP(<26,9,0,0,0,0>)
-    
+    enemy elementInfo <26,9,0,0,0,1>    
     tmp DWORD 0
     pacman BYTE '@'
 .code 
 
-    moveEnemy PROC
-    
-    moveEnemy ENDP
-
-    loadEnemy PROC
-        mov cx, noOfEnemy
-        mov al, noOfEnemy
-        mov cl, 6
+    getArrayVal PROC, x:BYTE, y:BYTE
         mov eax, 0
+        mov al, x      ; ROW
+        mov bl, mapCol  ; TOTAL ROW
         mul bl
-        mov tmp, eax
+        movsx bx, y
+        add ax, bx      ; RESULT + COL
+          
+        mov al, map[eax]         
         
-        .WHILE cx  
-            mGotoxy enemy[eax].col, enemy[eax].row            
-            mWrite "A"            
-            dec cx
-        .ENDW
+        .IF al != '|' && al != '-' && al != '+'  
+            mov ah, 1
+        .ELSE 
+            mov ah, 0
+        .ENDIF
+        
+        ret
+    getArrayVal ENDP    
+    
+    isHurdle PROC, co:BYTE, r:BYTE, colAdd:BYTE, rowAdd:BYTE
+        mov dl, co
+        mov dh, r
+        
+        add dl, colAdd
+        add dh, rowAdd
+        
+        invoke getArrayVal, dh, dl    ; return character in al and hurdle info in ah 
+        .IF ah
+            add dl, colAdd
+            ;add dh, rowAdd
+            invoke getArrayVal, dh, dl            
+        .ENDIF
+        ret
+    isHurdle ENDP
+
+    enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+        mov al, up
+        mov enemy.up, al
+
+        mov al, down
+        mov enemy.down, al
+
+        mov al, left
+        mov enemy.left, al      
+        
+        mov al, right
+        mov enemy.right, al        
+        ret
+    enemyDirection ENDP
+   
+    loadEnemy PROC                   
+           .IF enemy.left
+            invoke isHurdle, enemy.col, enemy.row, -1, 0
+            .IF ah
+                DEC enemy.col
+            .ENDIF
+        .ELSEIF enemy.right
+            invoke isHurdle, enemy.col, enemy.row, 1, 0
+            .IF ah
+                INC enemy.col
+            .ENDIF
+        .ELSEIF enemy.up
+            invoke isHurdle, enemy.col, enemy.row, 0, -1
+            .IF ah
+                DEC enemy.row
+            .ENDIF
+        .ELSEIF enemy.down
+            invoke isHurdle, enemy.col, enemy.row, 0, 1
+            .IF ah
+                INC enemy.row
+            .ENDIF
+        .ENDIF    
+        
+        .IF ah == 0         ; Trigger when hurdle is found
+            weNeedRes:
+            mov  eax,3
+            call RandomRange
+            call Randomize
+            
+            .IF eax == 0 && enemy.up == 0 && enemy.down == 0
+                invoke enemyDirection, 1, 0, 0, 0
+            .ELSEIF eax == 1 && enemy.down == 0  && enemy.up == 0 
+                invoke enemyDirection, 0, 1, 0, 0
+            .ELSEIF eax == 2 && enemy.left == 0  && enemy.right == 0 
+                invoke enemyDirection, 0, 0, 1, 0
+            .ELSEIF eax == 3 && enemy.right == 0 && enemy.left == 0   
+                invoke enemyDirection, 0, 0, 0, 1        
+            .ELSE 
+                jmp weNeedRes
+            .ENDIF
+            
+        .ENDIF
+        
+                    mGotoxy enemy.col, enemy.row            
+            mWrite "A" 
+        
+        
         ret
     loadEnemy ENDP
     
@@ -126,33 +212,12 @@ elementInfo ENDS
         
         ret
     setDirection ENDP
-    
-    getArrayVal PROC, x:BYTE, y:BYTE
-        mov eax, 0
-        mov al, x      ; ROW
-        mov bl, mapCol  ; TOTAL ROW
-        mul bl
-        movsx bx, y
-        add ax, bx      ; RESULT + COL
-          
-        mov al, map[eax]         
         
-        .IF al != '|' && al != '-' && al != '+'  
-            mov ah, 1
-        .ELSE 
-            mov ah, 0
-        .ENDIF
-        
-        ret
-    getArrayVal ENDP    
-    
     keySync PROC
         mov ah, 0
         INVOKE GetKeyState, VK_DOWN
         .IF ah && row < mapRow - 1 || pacmanMov.down
-            mov dl, row
-            add dl, 1
-            invoke getArrayVal, dl, col      ; return 1 in ah if hurdle found
+            invoke isHurdle, col, row, 0, 1
             .IF ah
                 INC row
                 invoke SetDirection, 0, 1, 0, 0
@@ -162,9 +227,7 @@ elementInfo ENDS
         mov ah, 0
         INVOKE GetKeyState, VK_UP
         .IF ah && row > 1 || pacmanMov.up
-            mov dl, row
-            sub dl, 1
-            invoke getArrayVal, dl, col      ; return 1 in ah if hurdle found
+            invoke isHurdle, col, row, 0, -1
             .IF ah 
                 DEC row
                 invoke SetDirection, 1, 0, 0, 0
@@ -174,9 +237,7 @@ elementInfo ENDS
         mov ah, 0
         INVOKE GetKeyState, VK_LEFT
         .IF ah && col > 1 || pacmanMov.left
-            mov dl, col
-            sub dl, 1
-            invoke getArrayVal, row, dl      ; return 1 in ah if hurdle found
+            invoke isHurdle, col, row, -1, 0
             .IF ah 
                 DEC col
                 invoke SetDirection, 0, 0, 1, 0                
@@ -186,13 +247,12 @@ elementInfo ENDS
         mov ah, 0
         INVOKE GetKeyState, VK_RIGHT
         .IF ah && col < mapCol || pacmanMov.right
-            mov dl, col
-            add dl, 1
-            invoke getArrayVal, row, dl      ; return 1 in ah if hurdle found
+            invoke isHurdle, col, row, 1, 0
             .IF ah
                 INC col
                 invoke SetDirection, 0, 0, 0, 1                
             .ENDIF
+
         .ENDIF     
         
         .IF col == 0
@@ -239,6 +299,14 @@ elementInfo ENDS
             call WriteChar  ; print out pacman
     
             invoke Sleep, speed
+            
+            mGotoxy enemy.col, enemy.row            
+            mov  al,' '     
+            call WriteChar
+            
+            mGotoxy enemy.col, enemy.row 
+            invoke getArrayVal, enemy.row, enemy.col      ; return char in al                  
+            call WriteChar            
             
             mGotoxy col, row
             mov  al,' '     

@@ -1,0 +1,905 @@
+Microsoft (R) Macro Assembler Version 6.15.8803		    08/26/15 23:16:22
+Pacman.asm						     Page 1 - 1
+
+
+				; 214 dots
+
+				include irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+				include macros.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+				INCLUDELIB user32.lib
+ = 00000025			VK_LEFT		EQU		000000025h
+ = 00000026			VK_UP		EQU		000000026h
+ = 00000027			VK_RIGHT	EQU		000000027h
+ = 00000028			VK_DOWN		EQU		000000028h
+ = 0000004F			maxCol      EQU     79
+ = 00000016			maxRow      EQU     22
+
+				GetKeyState PROTO, nVirtKey:DWORD
+
+ 00000004			movement STRUCT
+ 00000000  00			    up BYTE 0
+ 00000001  00			    down BYTE 0
+ 00000002  00			    left BYTE 0
+ 00000003  00			    right BYTE 0
+				movement ENDS
+
+ 00000006			elementInfo STRUCT
+ 00000000  1A			    col BYTE 26
+ 00000001  09			    row BYTE 9
+ 00000002  00			    up BYTE 0
+ 00000003  00			    down BYTE 0
+ 00000004  00			    left BYTE 0
+ 00000005  01			    right BYTE 1
+				elementInfo ENDS
+
+ 00000000			.data
+ 00000000 2B 2D 2D 2D 2D	    map BYTE "+---------------------------------------------------+"
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B
+ 00000035  7C 20 2E 20 2E	        BYTE "| . . . . . .  | . . . . . . . .  .  | . . . . . .  |"
+	   20 2E 20 2E 20
+	   2E 20 2E 20 20
+	   7C 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 20 2E
+	   20 20 7C 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C
+ 0000006A  7C 20 2E 20 2B	        BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   2B 2D 2D 2D 2D
+	   2D 2D 2B 20 2E
+	   20 7C 20 2E 20
+	   2B 2D 2D 2D 2D
+	   2D 2D 2B 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2B 20
+	   2E 20 7C
+ 0000009F  7C 20 6F 20 7C	        BYTE "| o |      | . |      | . | . |      | . |      | o |"
+	   20 20 20 20 20
+	   20 7C 20 2E 20
+	   7C 20 20 20 20
+	   20 20 7C 20 2E
+	   20 7C 20 2E 20
+	   7C 20 20 20 20
+	   20 20 7C 20 2E
+	   20 7C 20 20 20
+	   20 20 20 7C 20
+	   6F 20 7C
+ 000000D4  7C 20 2E 20 2B	        BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   2B 2D 2D 2D 2D
+	   2D 2D 2B 20 2E
+	   20 7C 20 2E 20
+	   2B 2D 2D 2D 2D
+	   2D 2D 2B 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2B 20
+	   2E 20 7C
+ 00000109  7C 20 2E 20 2E	        BYTE "| . . . . .  . | . . . . . . . . . . . . | . . . .  |"
+	   20 2E 20 2E 20
+	   2E 20 20 2E 20
+	   7C 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 7C 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C
+ 0000013E  7C 20 2E 20 2D	        BYTE "| . -------- . | . -------+------- . | . -------- . |"
+	   2D 2D 2D 2D 2D
+	   2D 2D 20 2E 20
+	   7C 20 2E 20 2D
+	   2D 2D 2D 2D 2D
+	   2D 2B 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   2E 20 7C 20 2E
+	   20 2D 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   2E 20 7C
+ 00000173  7C 20 2E 20 2E	        BYTE "| . . . . .  . | . . . .  | . . . .  | . . . . . .  |"
+	   20 2E 20 2E 20
+	   2E 20 20 2E 20
+	   7C 20 2E 20 2E
+	   20 2E 20 2E 20
+	   20 7C 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C
+ 000001A8  2B 2D 2D 2D 2D	        BYTE "+----------+ . +-------   |   -------+ . +----------+"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   2B 2D 2D 2D 2D
+	   2D 2D 2D 20 20
+	   20 7C 20 20 20
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B
+ 000001DD  20 20 20 20 20	        BYTE "           | . |                     | . |           "
+	   20 20 20 20 20
+	   20 7C 20 2E 20
+	   7C 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 7C 20 2E
+	   20 7C 20 20 20
+	   20 20 20 20 20
+	   20 20 20
+ 00000212  2D 2D 2D 2D 2D	        BYTE "-----------+ . |   +-------------+   | . +-----------"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   7C 20 20 20 2B
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2B 20
+	   20 20 7C 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D
+ 00000247  20 20 2E 20 2E	        BYTE "  . . . . . .      |    A A A    |     . . . . . . . "
+	   20 2E 20 2E 20
+	   2E 20 2E 20 20
+	   20 20 20 20 7C
+	   20 20 20 20 41
+	   20 41 20 41 20
+	   20 20 20 7C 20
+	   20 20 20 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20
+ 0000027C  2D 2D 2D 2D 2D	        BYTE "-----------+ . |   +-------------+   | . +-----------"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   7C 20 20 20 2B
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2B 20
+	   20 20 7C 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D
+ 000002B1  20 20 20 20 20	        BYTE "           | . |          @          | . |           "
+	   20 20 20 20 20
+	   20 7C 20 2E 20
+	   7C 20 20 20 20
+	   20 20 20 20 20
+	   20 40 20 20 20
+	   20 20 20 20 20
+	   20 20 7C 20 2E
+	   20 7C 20 20 20
+	   20 20 20 20 20
+	   20 20 20
+ 000002E6  2B 2D 2D 2D 2D	        BYTE "+----------+ . |   -------+-------   | . +----------+"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   7C 20 20 20 2D
+	   2D 2D 2D 2D 2D
+	   2D 2B 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   20 20 7C 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B
+ 0000031B  7C 20 2E 20 2E	        BYTE "| . . . . . . . . . . . . | . . . . . . . . . . . . |"
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 7C 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 7C
+ 00000350  7C 20 2E 20 2D	        BYTE "| . -------+ . -------- . | . -------  . +------- . |"
+	   2D 2D 2D 2D 2D
+	   2D 2B 20 2E 20
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 20 2E
+	   20 7C 20 2E 20
+	   2D 2D 2D 2D 2D
+	   2D 2D 20 20 2E
+	   20 2B 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   2E 20 7C
+ 00000385  7C 20 2E 20 2E	        BYTE "| . . . .  | . . . . . . . . . . . . | . . . . . .  |"
+	   20 2E 20 2E 20
+	   20 7C 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 7C 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C
+ 000003BA  2B 2D 2D 2D 2D	        BYTE "+------- . | . | . ---------------   | . |   -------+"
+	   2D 2D 2D 20 2E
+	   20 7C 20 2E 20
+	   7C 20 2E 20 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   20 20 7C 20 2E
+	   20 7C 20 20 20
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B
+ 000003EF  7C 20 2E 20 2E	        BYTE "| . . . . . . .| . . . . . . . . . . | . . . . . .  |"
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   7C 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 7C 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 20 7C
+ 00000424  7C 20 6F 20 2D	        BYTE "| o -----------+------- . | . -------+----------- o |"
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2B 2D 2D 2D 2D
+	   2D 2D 2D 20 2E
+	   20 7C 20 2E 20
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 20
+	   6F 20 7C
+ 00000459  7C 20 2E 20 2E	        BYTE "| . . . . . . . . . . . . | . . . . . . . . . . .   |"
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 7C 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
+	   20 20 7C
+ 0000048E  2B 2D 2D 2D 2D	        BYTE "+---------------------------------------------------+", 0 
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2D 2D 2D
+	   2D 2D 2B 00
+				        
+ = 00000017			    mapRow EQU 23
+ = 00000035			    mapCol EQU 53
+				    
+ 000004C4 1A			    col     BYTE 26
+ 000004C5 0D			    row     BYTE 13    
+ 000004C6 00000000		    score    DWORD 0    
+ 000004CA 64			    specialPowerLimit BYTE 100  ; total iteration counter for power
+ 000004CB 00			    specialPower BYTE ?       ;  
+ 000004CC 000000C8		    speed DWORD 200
+ 000004D0 01 00 00 00		    pacmanMov movement <1,0,0,0>
+				    
+ = 00000004			    noOfEnemy EQU 4
+ 000004D4 1A 09 00 00 00	    enemy elementInfo <26,9,0,0,0,1>    
+	   01
+ 000004DA 00000000		    tmp DWORD 0
+ 000004DE 40			    pacman BYTE '@'
+ 00000000			.code 
+
+ 00000000			    getArrayVal PROC, x:BYTE, y:BYTE
+ 00000003  B8 00000000		        mov eax, 0
+ 00000008  8A 45 08		        mov al, x      ; ROW
+ 0000000B  B3 35		        mov bl, mapCol  ; TOTAL ROW
+ 0000000D  F6 E3		        mul bl
+ 0000000F  66| 0F BE 5D		        movsx bx, y
+	   0C
+ 00000014  66| 03 C3		        add ax, bx      ; RESULT + COL
+				          
+ 00000017  8A 80 00000000 R	        mov al, map[eax]         
+				        
+				        .IF al != '|' && al != '-' && al != '+'  
+ 00000029  B4 01		            mov ah, 1
+				        .ELSE 
+ 0000002D  B4 00		            mov ah, 0
+				        .ENDIF
+				        
+				        ret
+ 00000033			    getArrayVal ENDP    
+				    
+ 00000033			    isHurdle PROC, co:BYTE, r:BYTE, colAdd:BYTE, rowAdd:BYTE
+ 00000036  8A 55 08		        mov dl, co
+ 00000039  8A 75 0C		        mov dh, r
+				        
+ 0000003C  02 55 10		        add dl, colAdd
+ 0000003F  02 75 14		        add dh, rowAdd
+				        
+				        invoke getArrayVal, dh, dl    ; return character in al and hurdle info in ah 
+				        .IF ah
+ 00000051  02 55 10		            add dl, colAdd
+				            ;add dh, rowAdd
+				            invoke getArrayVal, dh, dl            
+				        .ENDIF
+				        ret
+ 00000063			    isHurdle ENDP
+
+ 00000063			    enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+ 00000066  8A 45 08		        mov al, up
+ 00000069  A2 000004D6 R	        mov enemy.up, al
+
+ 0000006E  8A 45 0C		        mov al, down
+ 00000071  A2 000004D7 R	        mov enemy.down, al
+
+ 00000076  8A 45 10		        mov al, left
+ 00000079  A2 000004D8 R	        mov enemy.left, al      
+				        
+ 0000007E  8A 45 14		        mov al, right
+ 00000081  A2 000004D9 R	        mov enemy.right, al        
+				        ret
+ 0000008A			    enemyDirection ENDP
+				   
+ 0000008A			    loadEnemy PROC                   
+				           .IF enemy.left
+				            invoke isHurdle, enemy.col, enemy.row, -1, 0
+				            .IF ah
+ 000000B0  FE 0D 000004D4 R	                DEC enemy.col
+				            .ENDIF
+				        .ELSEIF enemy.right
+				            invoke isHurdle, enemy.col, enemy.row, 1, 0
+				            .IF ah
+ 000000DA  FE 05 000004D4 R	                INC enemy.col
+				            .ENDIF
+				        .ELSEIF enemy.up
+				            invoke isHurdle, enemy.col, enemy.row, 0, -1
+				            .IF ah
+ 00000104  FE 0D 000004D5 R	                DEC enemy.row
+				            .ENDIF
+				        .ELSEIF enemy.down
+				            invoke isHurdle, enemy.col, enemy.row, 0, 1
+				            .IF ah
+ 0000012E  FE 05 000004D5 R	                INC enemy.row
+				            .ENDIF
+				        .ENDIF    
+				        
+				        .IF ah == 0         ; Trigger when hurdle is found
+ 0000013C			            weNeedRes:
+ 0000013C  B8 00000003		            mov  eax,3
+ 00000141  E8 00000000 E	            call RandomRange
+ 00000146  E8 00000000 E	            call Randomize
+				            
+				            .IF eax == 0 && enemy.up == 0 && enemy.down == 0
+				                invoke enemyDirection, 1, 0, 0, 0
+				            .ELSEIF eax == 1 && enemy.down == 0  && enemy.up == 0 
+				                invoke enemyDirection, 0, 1, 0, 0
+				            .ELSEIF eax == 2 && enemy.left == 0  && enemy.right == 0 
+				                invoke enemyDirection, 0, 0, 1, 0
+				            .ELSEIF eax == 3 && enemy.right == 0 && enemy.left == 0   
+				                invoke enemyDirection, 0, 0, 0, 1        
+				            .ELSE 
+ 000001E2  E9 FFFFFF55		                jmp weNeedRes
+				            .ENDIF
+				            
+				        .ENDIF
+				        
+				                    mGotoxy enemy.col, enemy.row            
+ 000001E7  52		     1		push edx
+ 000001E8  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 000001EE  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 000001F4  E8 00000000 E     1		call Gotoxy
+ 000001F9  5A		     1		pop  edx
+				            mWrite "A" 
+ 000004DF		     1		.data				
+ 000004DF 41 00		     1		??0000 BYTE "A",0		
+ 000001FA		     1		.code
+ 000001FA  52		     1		push edx
+ 000001FB  BA 000004DF R     1		mov  edx,OFFSET ??0000
+ 00000200  E8 00000000 E     1		call Writestring
+ 00000205  5A		     1		pop  edx
+				        
+				        
+ 00000206  C3			        ret
+ 00000207			    loadEnemy ENDP
+				    
+
+ 00000207			    currentItem PROC
+ 00000207  B8 00000000		        mov eax, 0
+ 0000020C  A0 000004C5 R	        mov al, row      ; ROW
+ 00000211  B3 35		        mov bl, mapCol  ; TOTAL ROW
+ 00000213  F6 E3		        mul bl
+ 00000215  66| 0F BE 1D		        movsx bx, col
+	   000004C4 R
+ 0000021D  66| 03 C3		        add ax, bx      ; RESULT + 
+				        
+ 00000220  8A 98 00000000 R	        mov bl, map[eax] 
+				        .IF bl == '.'
+ 0000022B  C6 80 00000000 R	            mov map[eax] , ' '
+	   20
+ 00000232  FF 05 000004C6 R	            INC score
+				        .ELSEIF bl == 'o'
+ 0000023F  C6 80 00000000 R	            mov map[eax] , ' '
+	   20
+ 00000246  8A 1D 000004CA R	            mov bl, specialPowerLimit
+ 0000024C  88 1D 000004CB R	            mov specialPower, bl
+				        .ENDIF
+				        
+ 00000252  C3			        ret
+ 00000253			    currentItem ENDP
+				    
+ 00000253			    setDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+ 00000256  8A 45 08		        mov al, up
+ 00000259  A2 000004D0 R	        mov pacmanMov.up, al
+
+ 0000025E  8A 45 0C		        mov al, down
+ 00000261  A2 000004D1 R	        mov pacmanMov.down, al
+
+ 00000266  8A 45 10		        mov al, left
+ 00000269  A2 000004D2 R	        mov pacmanMov.left, al      
+				        
+ 0000026E  8A 45 14		        mov al, right
+ 00000271  A2 000004D3 R	        mov pacmanMov.right, al        
+				        
+				        ret
+ 0000027A			    setDirection ENDP
+				        
+ 0000027A			    keySync PROC
+ 0000027A  B4 00		        mov ah, 0
+				        INVOKE GetKeyState, VK_DOWN
+				        .IF ah && row < mapRow - 1 || pacmanMov.down
+				            invoke isHurdle, col, row, 0, 1
+				            .IF ah
+ 000002B2  FE 05 000004C5 R	                INC row
+				                invoke SetDirection, 0, 1, 0, 0
+				            .ENDIF 
+				        .ENDIF
+
+ 000002C5  B4 00		        mov ah, 0
+				        INVOKE GetKeyState, VK_UP
+				        .IF ah && row > 1 || pacmanMov.up
+				            invoke isHurdle, col, row, 0, -1
+				            .IF ah 
+ 000002FD  FE 0D 000004C5 R	                DEC row
+				                invoke SetDirection, 1, 0, 0, 0
+				            .ENDIF
+				        .ENDIF     
+				        
+ 00000310  B4 00		        mov ah, 0
+				        INVOKE GetKeyState, VK_LEFT
+				        .IF ah && col > 1 || pacmanMov.left
+				            invoke isHurdle, col, row, -1, 0
+				            .IF ah 
+ 00000348  FE 0D 000004C4 R	                DEC col
+				                invoke SetDirection, 0, 0, 1, 0                
+				            .ENDIF
+				        .ENDIF  
+
+ 0000035B  B4 00		        mov ah, 0
+				        INVOKE GetKeyState, VK_RIGHT
+				        .IF ah && col < mapCol || pacmanMov.right
+				            invoke isHurdle, col, row, 1, 0
+				            .IF ah
+ 00000393  FE 05 000004C4 R	                INC col
+				                invoke SetDirection, 0, 0, 0, 1                
+				            .ENDIF
+
+				        .ENDIF     
+				        
+				        .IF col == 0
+ 000003AF  B4 34		            mov ah, mapCol - 1
+ 000003B1  88 25 000004C4 R	            mov col, ah
+				        .ELSEIF col == mapCol - 1
+ 000003C2  C6 05 000004C4 R	            mov col, 0
+	   00
+				        .ENDIF
+				        
+ 000003C9  C3			        ret
+ 000003CA			    keySync ENDP
+
+ 000003CA			    printMap PROC
+ 000003CA  B2 00		        mov dl, 0   ; row
+ 000003CC  B6 00		        mov dh, 0   ; col
+				               
+				        .WHILE dl != mapRow
+				            .WHILE dh != mapCol
+				                    invoke getArrayVal, dl, dh      ; return char in al                  
+ 000003DD  E8 00000000 E	                    call WriteChar
+ 000003E2  FE C6		                    INC dh
+				            .ENDW
+ 000003E9  B6 00		            mov dh, 0
+ 000003EB  E8 00000000 E	            call Crlf
+ 000003F0  FE C2		            inc dl
+				        .ENDW
+ 000003F7  C3			        ret
+ 000003F8			    printMap ENDP
+				    
+ 000003F8			    main PROC
+ 000003F8  E8 FFFFFFCD		        call printMap
+ 000003FD			        forever:      
+ 000003FD  E8 FFFFFC88		            call loadEnemy
+ 00000402  E8 FFFFFE73		            call keySync          ; sync keyboard
+ 00000407  E8 FFFFFDFB		            call currentItem      ; Check for . and increase score
+				            
+				            mGotoxy col, row
+ 0000040C  52		     1		push edx
+ 0000040D  8A 35 000004C5 R  1	    mov  dh,row
+ 00000413  8A 15 000004C4 R  1	    mov  dl,col
+ 00000419  E8 00000000 E     1		call Gotoxy
+ 0000041E  5A		     1		pop  edx
+				            .IF specialPower == 0
+ 00000428  A0 000004DE R	                mov  al,pacman     
+				            .ELSEIF
+ 0000042F  B0 01		                mov al, 1
+ 00000431  FE 0D 000004CB R	                DEC specialPower
+				            .ENDIF
+ 00000437  E8 00000000 E	            call WriteChar  ; print out pacman
+				    
+				            invoke Sleep, speed
+				            
+				            mGotoxy enemy.col, enemy.row            
+ 00000447  52		     1		push edx
+ 00000448  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 0000044E  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 00000454  E8 00000000 E     1		call Gotoxy
+ 00000459  5A		     1		pop  edx
+ 0000045A  B0 20		            mov  al,' '     
+ 0000045C  E8 00000000 E	            call WriteChar
+				            
+				            mGotoxy enemy.col, enemy.row 
+ 00000461  52		     1		push edx
+ 00000462  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 00000468  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 0000046E  E8 00000000 E     1		call Gotoxy
+ 00000473  5A		     1		pop  edx
+				            invoke getArrayVal, enemy.row, enemy.col      ; return char in al                  
+ 00000485  E8 00000000 E	            call WriteChar            
+				            
+				            mGotoxy col, row
+ 0000048A  52		     1		push edx
+ 0000048B  8A 35 000004C5 R  1	    mov  dh,row
+ 00000491  8A 15 000004C4 R  1	    mov  dl,col
+ 00000497  E8 00000000 E     1		call Gotoxy
+ 0000049C  5A		     1		pop  edx
+ 0000049D  B0 20		            mov  al,' '     
+ 0000049F  E8 00000000 E	            call WriteChar
+				            
+				            mGotoxy 60, 10
+ 000004A4  52		     1		push edx
+ 000004A5  B6 0A	     1	    mov  dh,10
+ 000004A7  B2 3C	     1	    mov  dl,60
+ 000004A9  E8 00000000 E     1		call Gotoxy
+ 000004AE  5A		     1		pop  edx
+				            mWrite "Score:" 
+ 000004E1		     1		.data				
+ 000004E1 53 63 6F 72 65     1		??0001 BYTE "Score:",0		
+	   3A 00
+ 000004AF		     1		.code
+ 000004AF  52		     1		push edx
+ 000004B0  BA 000004E1 R     1		mov  edx,OFFSET ??0001
+ 000004B5  E8 00000000 E     1		call Writestring
+ 000004BA  5A		     1		pop  edx
+ 000004BB  A1 000004C6 R	            mov eax, score
+ 000004C0  E8 00000000 E	            call WriteInt
+				            
+				            
+ 000004C5  E9 FFFFFF33		        jmp forever
+ 000004CA  C3			        ret
+ 000004CB			    main ENDP
+				END main
+Microsoft (R) Macro Assembler Version 6.15.8803		    08/26/15 23:16:22
+Pacman.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+IsDefined  . . . . . . . . . . .	Func
+NewLine  . . . . . . . . . . . .	Proc
+ShowFlag . . . . . . . . . . . .	Proc
+ShowRegister . . . . . . . . . .	Proc
+Startup  . . . . . . . . . . . .	Proc
+WriteSpace . . . . . . . . . . .	Proc
+mDumpMem . . . . . . . . . . . .	Proc
+mGotoxy  . . . . . . . . . . . .	Proc
+mNewLine . . . . . . . . . . . .	Proc
+mReadStr . . . . . . . . . . . .	Proc
+mWriteLn . . . . . . . . . . . .	Proc
+mWriteStr  . . . . . . . . . . .	Proc
+mWrite . . . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000005
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 Byte
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPos  . . . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  maxWinSize . . . . . . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+elementInfo  . . . . . . . . . .	 00000006
+  col  . . . . . . . . . . . . .	 00000000	 Byte
+  row  . . . . . . . . . . . . .	 00000001	 Byte
+  up . . . . . . . . . . . . . .	 00000002	 Byte
+  down . . . . . . . . . . . . .	 00000003	 Byte
+  left . . . . . . . . . . . . .	 00000004	 Byte
+  right  . . . . . . . . . . . .	 00000005	 Byte
+movement . . . . . . . . . . . .	 00000004
+  up . . . . . . . . . . . . . .	 00000000	 Byte
+  down . . . . . . . . . . . . .	 00000001	 Byte
+  left . . . . . . . . . . . . .	 00000002	 Byte
+  right  . . . . . . . . . . . .	 00000003	 Byte
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000004E8 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000004CB DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ClrScr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+currentItem  . . . . . . . . . .	P Near	 00000207 _TEXT	Length= 0000004C Public STDCALL
+enemyDirection . . . . . . . . .	P Near	 00000063 _TEXT	Length= 00000027 Public STDCALL
+  up . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  down . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  left . . . . . . . . . . . . .	Byte	 bp + 00000010
+  right  . . . . . . . . . . . .	Byte	 bp + 00000014
+getArrayVal  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000033 Public STDCALL
+  x  . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  y  . . . . . . . . . . . . . .	Byte	 bp + 0000000C
+isHurdle . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 00000030 Public STDCALL
+  co . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  r  . . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  colAdd . . . . . . . . . . . .	Byte	 bp + 00000010
+  rowAdd . . . . . . . . . . . .	Byte	 bp + 00000014
+keySync  . . . . . . . . . . . .	P Near	 0000027A _TEXT	Length= 00000150 Public STDCALL
+loadEnemy  . . . . . . . . . . .	P Near	 0000008A _TEXT	Length= 0000017D Public STDCALL
+  weNeedRes  . . . . . . . . . .	L Near	 0000013C _TEXT	
+main . . . . . . . . . . . . . .	P Near	 000003F8 _TEXT	Length= 000000D3 Public STDCALL
+  forever  . . . . . . . . . . .	L Near	 000003FD _TEXT	
+printMap . . . . . . . . . . . .	P Near	 000003CA _TEXT	Length= 0000002E Public STDCALL
+setDirection . . . . . . . . . .	P Near	 00000253 _TEXT	Length= 00000027 Public STDCALL
+  up . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  down . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  left . . . . . . . . . . . . .	Byte	 bp + 00000010
+  right  . . . . . . . . . . . .	Byte	 bp + 00000014
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	Byte	 000004DF _DATA	
+??0001 . . . . . . . . . . . . .	Byte	 000004E1 _DATA	
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+VK_DOWN  . . . . . . . . . . . .	Number	 00000028h   
+VK_LEFT  . . . . . . . . . . . .	Number	 00000025h   
+VK_RIGHT . . . . . . . . . . . .	Number	 00000027h   
+VK_UP  . . . . . . . . . . . . .	Number	 00000026h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+col  . . . . . . . . . . . . . .	Byte	 000004C4 _DATA	
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+enemy  . . . . . . . . . . . . .	elementInfo  000004D4 _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+mapCol . . . . . . . . . . . . .	Number	 00000035h   
+mapRow . . . . . . . . . . . . .	Number	 00000017h   
+map  . . . . . . . . . . . . . .	Byte	 00000000 _DATA	
+maxCol . . . . . . . . . . . . .	Number	 0000004Fh   
+maxRow . . . . . . . . . . . . .	Number	 00000016h   
+noOfEnemy  . . . . . . . . . . .	Number	 00000004h   
+pacmanMov  . . . . . . . . . . .	movement  000004D0 _DATA	
+pacman . . . . . . . . . . . . .	Byte	 000004DE _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+row  . . . . . . . . . . . . . .	Byte	 000004C5 _DATA	
+score  . . . . . . . . . . . . .	DWord	 000004C6 _DATA	
+specialPowerLimit  . . . . . . .	Byte	 000004CA _DATA	
+specialPower . . . . . . . . . .	Byte	 000004CB _DATA	
+speed  . . . . . . . . . . . . .	DWord	 000004CC _DATA	
+tmp  . . . . . . . . . . . . . .	DWord	 000004DA _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   0 Warnings
+	   0 Errors
