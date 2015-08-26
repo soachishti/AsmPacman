@@ -102,11 +102,11 @@ elementInfo ENDS
         add dh, rowAdd
         
         invoke getArrayVal, dh, dl    ; return character in al and hurdle info in ah 
-        .IF ah
-            add dl, colAdd
+        ;.IF ah
+        ;    add dl, colAdd
             ;add dh, rowAdd
-            invoke getArrayVal, dh, dl            
-        .ENDIF
+        ;    invoke getArrayVal, dh, dl            
+        ;.ENDIF
         ret
     isHurdle ENDP
 
