@@ -35,13 +35,13 @@ elementInfo ENDS
 
 .data
     map BYTE "+---------------------------------------------------+"
-        BYTE "| . . . . . .  | . . . . . . . .  .  | . . . . . .  |"
+        BYTE "| . . . . . .  . . . . . . . . .  .  . . . . . . .  |"
         BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
         BYTE "| o |      | . |      | . | . |      | . |      | o |"
         BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
-        BYTE "| . . . . .  . | . . . . . . . . . . . . | . . . .  |"
+        BYTE "| . . . . .  . . . . . . . . . . . . . . . . . . .  |"
         BYTE "| . -------- . | . -------+------- . | . -------- . |"
-        BYTE "| . . . . .  . | . . . .  | . . . .  | . . . . . .  |"
+        BYTE "| . . . . .  . . . . . .  | . . . .  . . . . . . .  |"
         BYTE "+----------+ . +-------   |   -------+ . +----------+"
         BYTE "           | . |                     | . |           "
         BYTE "-----------+ . |   +-------------+   | . +-----------"
@@ -66,11 +66,11 @@ elementInfo ENDS
     score    DWORD 0    
     specialPowerLimit BYTE 100  ; total iteration counter for power
     specialPower BYTE ?       ;  
-    speed DWORD 200
+    speed DWORD 50
     pacmanMov movement <1,0,0,0>
     
-    noOfEnemy EQU 4
     enemy elementInfo <26,9,0,0,0,1>    
+    enemy2 elementInfo <26,9,0,0,1,0>    
     tmp DWORD 0
     pacman BYTE '@'
 .code 
@@ -110,6 +110,21 @@ elementInfo ENDS
         ret
     isHurdle ENDP
 
+    enemy2Direction PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+        mov al, up
+        mov enemy2.up, al
+
+        mov al, down
+        mov enemy2.down, al
+
+        mov al, left
+        mov enemy2.left, al      
+        
+        mov al, right
+        mov enemy2.right, al        
+        ret
+    enemy2Direction ENDP    
+    
     enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
         mov al, up
         mov enemy.up, al
@@ -149,21 +164,36 @@ elementInfo ENDS
         .ENDIF    
         
         .IF ah == 0         ; Trigger when hurdle is found
-            weNeedRes:
-            mov  eax,3
-            call RandomRange
             call Randomize
+            mov  eax,2
+            call RandomRange
             
-            .IF eax == 0 && enemy.up == 0 && enemy.down == 0
-                invoke enemyDirection, 1, 0, 0, 0
-            .ELSEIF eax == 1 && enemy.down == 0  && enemy.up == 0 
-                invoke enemyDirection, 0, 1, 0, 0
-            .ELSEIF eax == 2 && enemy.left == 0  && enemy.right == 0 
-                invoke enemyDirection, 0, 0, 1, 0
-            .ELSEIF eax == 3 && enemy.right == 0 && enemy.left == 0   
-                invoke enemyDirection, 0, 0, 0, 1        
-            .ELSE 
-                jmp weNeedRes
+            ; UP DOWN LEFT RIGHT
+            
+            .IF enemy.down == 1
+                .IF eax
+                    invoke enemyDirection, 0,0,1,0 
+                .ELSE
+                    invoke enemyDirection, 0,0,0,1                 
+                .ENDIF
+            .ELSEIF enemy.up == 1
+                .IF eax
+                    invoke enemyDirection, 0,0,1,0 
+                .ELSE
+                    invoke enemyDirection, 0,0,0,1                 
+                .ENDIF
+            .ELSEIF enemy.right == 1
+                .IF eax
+                    invoke enemyDirection, 1,0,0,0 
+                .ELSE
+                    invoke enemyDirection, 0,1,0,0                 
+                .ENDIF
+            .ELSEIF enemy.left == 1
+                .IF eax
+                    invoke enemyDirection, 1,0,0,0 
+                .ELSE
+                    invoke enemyDirection, 0,1,0,0                 
+                .ENDIF
             .ENDIF
             
         .ENDIF
@@ -175,6 +205,72 @@ elementInfo ENDS
         ret
     loadEnemy ENDP
     
+    
+    
+    loadEnemy2 PROC                   
+           .IF enemy2.left
+            invoke isHurdle, enemy2.col, enemy2.row, -1, 0
+            .IF ah
+                DEC enemy2.col
+            .ENDIF
+        .ELSEIF enemy2.right
+            invoke isHurdle, enemy2.col, enemy2.row, 1, 0
+            .IF ah
+                INC enemy2.col
+            .ENDIF
+        .ELSEIF enemy2.up
+            invoke isHurdle, enemy2.col, enemy2.row, 0, -1
+            .IF ah
+                DEC enemy2.row
+            .ENDIF
+        .ELSEIF enemy2.down
+            invoke isHurdle, enemy2.col, enemy2.row, 0, 1
+            .IF ah
+                INC enemy2.row
+            .ENDIF
+        .ENDIF    
+        
+        .IF ah == 0         ; Trigger when hurdle is found
+            call Randomize
+            mov  eax,2
+            call RandomRange
+            
+            ; UP DOWN LEFT RIGHT
+            
+            .IF enemy2.down == 1
+                .IF eax
+                    invoke enemy2Direction, 0,0,1,0 
+                .ELSE
+                    invoke enemy2Direction, 0,0,0,1                 
+                .ENDIF
+            .ELSEIF enemy2.up == 1
+                .IF eax
+                    invoke enemy2Direction, 0,0,1,0 
+                .ELSE
+                    invoke enemy2Direction, 0,0,0,1                 
+                .ENDIF
+            .ELSEIF enemy2.right == 1
+                .IF eax
+                    invoke enemy2Direction, 1,0,0,0 
+                .ELSE
+                    invoke enemy2Direction, 0,1,0,0                 
+                .ENDIF
+            .ELSEIF enemy2.left == 1
+                .IF eax
+                    invoke enemy2Direction, 1,0,0,0 
+                .ELSE
+                    invoke enemy2Direction, 0,1,0,0                 
+                .ENDIF
+            .ENDIF
+            
+        .ENDIF
+        
+                    mGotoxy enemy2.col, enemy2.row            
+            mWrite "A" 
+        
+        
+        ret
+    loadEnemy2 ENDP
 
     currentItem PROC
         mov eax, 0
@@ -285,6 +381,7 @@ elementInfo ENDS
     main PROC
         call printMap
         forever:      
+            call loadEnemy2
             call loadEnemy
             call keySync          ; sync keyboard
             call currentItem      ; Check for . and increase score
@@ -300,10 +397,16 @@ elementInfo ENDS
     
             invoke Sleep, speed
             
+            mGotoxy enemy2.col, enemy2.row            
+            mov  al,' '     
+            call WriteChar
+            mGotoxy enemy2.col, enemy2.row 
+            invoke getArrayVal, enemy2.row, enemy2.col      ; return char in al                  
+            call WriteChar 
+            
             mGotoxy enemy.col, enemy.row            
             mov  al,' '     
             call WriteChar
-            
             mGotoxy enemy.col, enemy.row 
             invoke getArrayVal, enemy.row, enemy.col      ; return char in al                  
             call WriteChar            

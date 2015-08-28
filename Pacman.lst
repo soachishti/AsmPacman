@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.15.8803		    08/26/15 23:24:14
+Microsoft (R) Macro Assembler Version 6.15.8803		    08/28/15 01:01:27
 Pacman.asm						     Page 1 - 1
 
 
@@ -7,7 +7,7 @@ Pacman.asm						     Page 1 - 1
 				; Randomness of enemy movement
 				; Enemy only trigger after colliding
 				;   - Try to move when turn comes
-
+				; What will happen when pacman eat o
 
 				include irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -61,14 +61,14 @@ Pacman.asm						     Page 1 - 1
 	   2D 2D 2D 2D 2D
 	   2D 2D 2D 2D 2D
 	   2D 2D 2B
- 00000035  7C 20 2E 20 2E	        BYTE "| . . . . . .  | . . . . . . . .  .  | . . . . . .  |"
+ 00000035  7C 20 2E 20 2E	        BYTE "| . . . . . .  . . . . . . . . .  .  . . . . . . .  |"
 	   20 2E 20 2E 20
 	   2E 20 2E 20 20
-	   7C 20 2E 20 2E
+	   2E 20 2E 20 2E
 	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
 	   20 2E 20 20 2E
-	   20 20 7C 20 2E
+	   20 20 2E 20 2E
 	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
 	   20 20 7C
@@ -105,15 +105,15 @@ Pacman.asm						     Page 1 - 1
 	   20 2B 2D 2D 2D
 	   2D 2D 2D 2B 20
 	   2E 20 7C
- 00000109  7C 20 2E 20 2E	        BYTE "| . . . . .  . | . . . . . . . . . . . . | . . . .  |"
+ 00000109  7C 20 2E 20 2E	        BYTE "| . . . . .  . . . . . . . . . . . . . . . . . . .  |"
 	   20 2E 20 2E 20
 	   2E 20 20 2E 20
-	   7C 20 2E 20 2E
-	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
 	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
-	   20 7C 20 2E 20
+	   20 2E 20 2E 20
+	   2E 20 2E 20 2E
+	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
 	   20 20 7C
  0000013E  7C 20 2E 20 2D	        BYTE "| . -------- . | . -------+------- . | . -------- . |"
@@ -127,14 +127,14 @@ Pacman.asm						     Page 1 - 1
 	   20 2D 2D 2D 2D
 	   2D 2D 2D 2D 20
 	   2E 20 7C
- 00000173  7C 20 2E 20 2E	        BYTE "| . . . . .  . | . . . .  | . . . .  | . . . . . .  |"
+ 00000173  7C 20 2E 20 2E	        BYTE "| . . . . .  . . . . . .  | . . . .  . . . . . . .  |"
 	   20 2E 20 2E 20
 	   2E 20 20 2E 20
-	   7C 20 2E 20 2E
+	   2E 20 2E 20 2E
 	   20 2E 20 2E 20
 	   20 7C 20 2E 20
 	   2E 20 2E 20 2E
-	   20 20 7C 20 2E
+	   20 20 2E 20 2E
 	   20 2E 20 2E 20
 	   2E 20 2E 20 2E
 	   20 20 7C
@@ -312,14 +312,15 @@ Pacman.asm						     Page 1 - 1
  000004C6 00000000		    score    DWORD 0    
  000004CA 64			    specialPowerLimit BYTE 100  ; total iteration counter for power
  000004CB 00			    specialPower BYTE ?       ;  
- 000004CC 000000C8		    speed DWORD 200
+ 000004CC 00000032		    speed DWORD 50
  000004D0 01 00 00 00		    pacmanMov movement <1,0,0,0>
 				    
- = 00000004			    noOfEnemy EQU 4
  000004D4 1A 09 00 00 00	    enemy elementInfo <26,9,0,0,0,1>    
 	   01
- 000004DA 00000000		    tmp DWORD 0
- 000004DE 40			    pacman BYTE '@'
+ 000004DA 1A 09 00 00 01	    enemy2 elementInfo <26,9,0,0,1,0>    
+	   00
+ 000004E0 00000000		    tmp DWORD 0
+ 000004E4 40			    pacman BYTE '@'
  00000000			.code 
 
  00000000			    getArrayVal PROC, x:BYTE, y:BYTE
@@ -358,268 +359,393 @@ Pacman.asm						     Page 1 - 1
 				        ret
  00000051			    isHurdle ENDP
 
- 00000051			    enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+ 00000051			    enemy2Direction PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
  00000054  8A 45 08		        mov al, up
- 00000057  A2 000004D6 R	        mov enemy.up, al
+ 00000057  A2 000004DC R	        mov enemy2.up, al
 
  0000005C  8A 45 0C		        mov al, down
- 0000005F  A2 000004D7 R	        mov enemy.down, al
+ 0000005F  A2 000004DD R	        mov enemy2.down, al
 
  00000064  8A 45 10		        mov al, left
- 00000067  A2 000004D8 R	        mov enemy.left, al      
+ 00000067  A2 000004DE R	        mov enemy2.left, al      
 				        
  0000006C  8A 45 14		        mov al, right
- 0000006F  A2 000004D9 R	        mov enemy.right, al        
+ 0000006F  A2 000004DF R	        mov enemy2.right, al        
 				        ret
- 00000078			    enemyDirection ENDP
+ 00000078			    enemy2Direction ENDP    
+				    
+ 00000078			    enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+ 0000007B  8A 45 08		        mov al, up
+ 0000007E  A2 000004D6 R	        mov enemy.up, al
+
+ 00000083  8A 45 0C		        mov al, down
+ 00000086  A2 000004D7 R	        mov enemy.down, al
+
+ 0000008B  8A 45 10		        mov al, left
+ 0000008E  A2 000004D8 R	        mov enemy.left, al      
+				        
+ 00000093  8A 45 14		        mov al, right
+ 00000096  A2 000004D9 R	        mov enemy.right, al        
+				        ret
+ 0000009F			    enemyDirection ENDP
 				   
- 00000078			    loadEnemy PROC                   
+ 0000009F			    loadEnemy PROC                   
 				           .IF enemy.left
 				            invoke isHurdle, enemy.col, enemy.row, -1, 0
 				            .IF ah
- 0000009E  FE 0D 000004D4 R	                DEC enemy.col
+ 000000C5  FE 0D 000004D4 R	                DEC enemy.col
 				            .ENDIF
 				        .ELSEIF enemy.right
 				            invoke isHurdle, enemy.col, enemy.row, 1, 0
 				            .IF ah
- 000000C8  FE 05 000004D4 R	                INC enemy.col
+ 000000EF  FE 05 000004D4 R	                INC enemy.col
 				            .ENDIF
 				        .ELSEIF enemy.up
 				            invoke isHurdle, enemy.col, enemy.row, 0, -1
 				            .IF ah
- 000000F2  FE 0D 000004D5 R	                DEC enemy.row
+ 00000119  FE 0D 000004D5 R	                DEC enemy.row
 				            .ENDIF
 				        .ELSEIF enemy.down
 				            invoke isHurdle, enemy.col, enemy.row, 0, 1
 				            .IF ah
- 0000011C  FE 05 000004D5 R	                INC enemy.row
+ 00000143  FE 05 000004D5 R	                INC enemy.row
 				            .ENDIF
 				        .ENDIF    
 				        
 				        .IF ah == 0         ; Trigger when hurdle is found
- 0000012A			            weNeedRes:
- 0000012A  B8 00000003		            mov  eax,3
- 0000012F  E8 00000000 E	            call RandomRange
- 00000134  E8 00000000 E	            call Randomize
+ 00000151  E8 00000000 E	            call Randomize
+ 00000156  B8 00000002		            mov  eax,2
+ 0000015B  E8 00000000 E	            call RandomRange
 				            
-				            .IF eax == 0 && enemy.up == 0 && enemy.down == 0
-				                invoke enemyDirection, 1, 0, 0, 0
-				            .ELSEIF eax == 1 && enemy.down == 0  && enemy.up == 0 
-				                invoke enemyDirection, 0, 1, 0, 0
-				            .ELSEIF eax == 2 && enemy.left == 0  && enemy.right == 0 
-				                invoke enemyDirection, 0, 0, 1, 0
-				            .ELSEIF eax == 3 && enemy.right == 0 && enemy.left == 0   
-				                invoke enemyDirection, 0, 0, 0, 1        
-				            .ELSE 
- 000001D0  E9 FFFFFF55		                jmp weNeedRes
+				            ; UP DOWN LEFT RIGHT
+				            
+				            .IF enemy.down == 1
+				                .IF eax
+				                    invoke enemyDirection, 0,0,1,0 
+				                .ELSE
+				                    invoke enemyDirection, 0,0,0,1                 
+				                .ENDIF
+				            .ELSEIF enemy.up == 1
+				                .IF eax
+				                    invoke enemyDirection, 0,0,1,0 
+				                .ELSE
+				                    invoke enemyDirection, 0,0,0,1                 
+				                .ENDIF
+				            .ELSEIF enemy.right == 1
+				                .IF eax
+				                    invoke enemyDirection, 1,0,0,0 
+				                .ELSE
+				                    invoke enemyDirection, 0,1,0,0                 
+				                .ENDIF
+				            .ELSEIF enemy.left == 1
+				                .IF eax
+				                    invoke enemyDirection, 1,0,0,0 
+				                .ELSE
+				                    invoke enemyDirection, 0,1,0,0                 
+				                .ENDIF
 				            .ENDIF
 				            
 				        .ENDIF
 				        
 				                    mGotoxy enemy.col, enemy.row            
- 000001D5  52		     1		push edx
- 000001D6  8A 35 000004D5 R  1	    mov  dh,enemy.row
- 000001DC  8A 15 000004D4 R  1	    mov  dl,enemy.col
- 000001E2  E8 00000000 E     1		call Gotoxy
- 000001E7  5A		     1		pop  edx
+ 0000020D  52		     1		push edx
+ 0000020E  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 00000214  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 0000021A  E8 00000000 E     1		call Gotoxy
+ 0000021F  5A		     1		pop  edx
 				            mWrite "A" 
- 000004DF		     1		.data				
- 000004DF 41 00		     1		??0000 BYTE "A",0		
- 000001E8		     1		.code
- 000001E8  52		     1		push edx
- 000001E9  BA 000004DF R     1		mov  edx,OFFSET ??0000
- 000001EE  E8 00000000 E     1		call Writestring
- 000001F3  5A		     1		pop  edx
+ 000004E5		     1		.data				
+ 000004E5 41 00		     1		??0000 BYTE "A",0		
+ 00000220		     1		.code
+ 00000220  52		     1		push edx
+ 00000221  BA 000004E5 R     1		mov  edx,OFFSET ??0000
+ 00000226  E8 00000000 E     1		call Writestring
+ 0000022B  5A		     1		pop  edx
 				        
 				        
- 000001F4  C3			        ret
- 000001F5			    loadEnemy ENDP
+ 0000022C  C3			        ret
+ 0000022D			    loadEnemy ENDP
 				    
-
- 000001F5			    currentItem PROC
- 000001F5  B8 00000000		        mov eax, 0
- 000001FA  A0 000004C5 R	        mov al, row      ; ROW
- 000001FF  B3 35		        mov bl, mapCol  ; TOTAL ROW
- 00000201  F6 E3		        mul bl
- 00000203  66| 0F BE 1D		        movsx bx, col
-	   000004C4 R
- 0000020B  66| 03 C3		        add ax, bx      ; RESULT + 
+				    
+				    
+ 0000022D			    loadEnemy2 PROC                   
+				           .IF enemy2.left
+				            invoke isHurdle, enemy2.col, enemy2.row, -1, 0
+				            .IF ah
+ 00000253  FE 0D 000004DA R	                DEC enemy2.col
+				            .ENDIF
+				        .ELSEIF enemy2.right
+				            invoke isHurdle, enemy2.col, enemy2.row, 1, 0
+				            .IF ah
+ 0000027D  FE 05 000004DA R	                INC enemy2.col
+				            .ENDIF
+				        .ELSEIF enemy2.up
+				            invoke isHurdle, enemy2.col, enemy2.row, 0, -1
+				            .IF ah
+ 000002A7  FE 0D 000004DB R	                DEC enemy2.row
+				            .ENDIF
+				        .ELSEIF enemy2.down
+				            invoke isHurdle, enemy2.col, enemy2.row, 0, 1
+				            .IF ah
+ 000002D1  FE 05 000004DB R	                INC enemy2.row
+				            .ENDIF
+				        .ENDIF    
 				        
- 0000020E  8A 98 00000000 R	        mov bl, map[eax] 
-				        .IF bl == '.'
- 00000219  C6 80 00000000 R	            mov map[eax] , ' '
-	   20
- 00000220  FF 05 000004C6 R	            INC score
-				        .ELSEIF bl == 'o'
- 0000022D  C6 80 00000000 R	            mov map[eax] , ' '
-	   20
- 00000234  8A 1D 000004CA R	            mov bl, specialPowerLimit
- 0000023A  88 1D 000004CB R	            mov specialPower, bl
+				        .IF ah == 0         ; Trigger when hurdle is found
+ 000002DF  E8 00000000 E	            call Randomize
+ 000002E4  B8 00000002		            mov  eax,2
+ 000002E9  E8 00000000 E	            call RandomRange
+				            
+				            ; UP DOWN LEFT RIGHT
+				            
+				            .IF enemy2.down == 1
+				                .IF eax
+				                    invoke enemy2Direction, 0,0,1,0 
+				                .ELSE
+				                    invoke enemy2Direction, 0,0,0,1                 
+				                .ENDIF
+				            .ELSEIF enemy2.up == 1
+				                .IF eax
+				                    invoke enemy2Direction, 0,0,1,0 
+				                .ELSE
+				                    invoke enemy2Direction, 0,0,0,1                 
+				                .ENDIF
+				            .ELSEIF enemy2.right == 1
+				                .IF eax
+				                    invoke enemy2Direction, 1,0,0,0 
+				                .ELSE
+				                    invoke enemy2Direction, 0,1,0,0                 
+				                .ENDIF
+				            .ELSEIF enemy2.left == 1
+				                .IF eax
+				                    invoke enemy2Direction, 1,0,0,0 
+				                .ELSE
+				                    invoke enemy2Direction, 0,1,0,0                 
+				                .ENDIF
+				            .ENDIF
+				            
 				        .ENDIF
 				        
- 00000240  C3			        ret
- 00000241			    currentItem ENDP
-				    
- 00000241			    setDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
- 00000244  8A 45 08		        mov al, up
- 00000247  A2 000004D0 R	        mov pacmanMov.up, al
-
- 0000024C  8A 45 0C		        mov al, down
- 0000024F  A2 000004D1 R	        mov pacmanMov.down, al
-
- 00000254  8A 45 10		        mov al, left
- 00000257  A2 000004D2 R	        mov pacmanMov.left, al      
+				                    mGotoxy enemy2.col, enemy2.row            
+ 0000039B  52		     1		push edx
+ 0000039C  8A 35 000004DB R  1	    mov  dh,enemy2.row
+ 000003A2  8A 15 000004DA R  1	    mov  dl,enemy2.col
+ 000003A8  E8 00000000 E     1		call Gotoxy
+ 000003AD  5A		     1		pop  edx
+				            mWrite "A" 
+ 000004E7		     1		.data				
+ 000004E7 41 00		     1		??0001 BYTE "A",0		
+ 000003AE		     1		.code
+ 000003AE  52		     1		push edx
+ 000003AF  BA 000004E7 R     1		mov  edx,OFFSET ??0001
+ 000003B4  E8 00000000 E     1		call Writestring
+ 000003B9  5A		     1		pop  edx
 				        
- 0000025C  8A 45 14		        mov al, right
- 0000025F  A2 000004D3 R	        mov pacmanMov.right, al        
+				        
+ 000003BA  C3			        ret
+ 000003BB			    loadEnemy2 ENDP
+
+ 000003BB			    currentItem PROC
+ 000003BB  B8 00000000		        mov eax, 0
+ 000003C0  A0 000004C5 R	        mov al, row      ; ROW
+ 000003C5  B3 35		        mov bl, mapCol  ; TOTAL ROW
+ 000003C7  F6 E3		        mul bl
+ 000003C9  66| 0F BE 1D		        movsx bx, col
+	   000004C4 R
+ 000003D1  66| 03 C3		        add ax, bx      ; RESULT + 
+				        
+ 000003D4  8A 98 00000000 R	        mov bl, map[eax] 
+				        .IF bl == '.'
+ 000003DF  C6 80 00000000 R	            mov map[eax] , ' '
+	   20
+ 000003E6  FF 05 000004C6 R	            INC score
+				        .ELSEIF bl == 'o'
+ 000003F3  C6 80 00000000 R	            mov map[eax] , ' '
+	   20
+ 000003FA  8A 1D 000004CA R	            mov bl, specialPowerLimit
+ 00000400  88 1D 000004CB R	            mov specialPower, bl
+				        .ENDIF
+				        
+ 00000406  C3			        ret
+ 00000407			    currentItem ENDP
+				    
+ 00000407			    setDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
+ 0000040A  8A 45 08		        mov al, up
+ 0000040D  A2 000004D0 R	        mov pacmanMov.up, al
+
+ 00000412  8A 45 0C		        mov al, down
+ 00000415  A2 000004D1 R	        mov pacmanMov.down, al
+
+ 0000041A  8A 45 10		        mov al, left
+ 0000041D  A2 000004D2 R	        mov pacmanMov.left, al      
+				        
+ 00000422  8A 45 14		        mov al, right
+ 00000425  A2 000004D3 R	        mov pacmanMov.right, al        
 				        
 				        ret
- 00000268			    setDirection ENDP
+ 0000042E			    setDirection ENDP
 				        
- 00000268			    keySync PROC
- 00000268  B4 00		        mov ah, 0
+ 0000042E			    keySync PROC
+ 0000042E  B4 00		        mov ah, 0
 				        INVOKE GetKeyState, VK_DOWN
 				        .IF ah && row < mapRow - 1 || pacmanMov.down
 				            invoke isHurdle, col, row, 0, 1
 				            .IF ah
- 000002A0  FE 05 000004C5 R	                INC row
+ 00000466  FE 05 000004C5 R	                INC row
 				                invoke SetDirection, 0, 1, 0, 0
 				            .ENDIF 
 				        .ENDIF
 
- 000002B3  B4 00		        mov ah, 0
+ 00000479  B4 00		        mov ah, 0
 				        INVOKE GetKeyState, VK_UP
 				        .IF ah && row > 1 || pacmanMov.up
 				            invoke isHurdle, col, row, 0, -1
 				            .IF ah 
- 000002EB  FE 0D 000004C5 R	                DEC row
+ 000004B1  FE 0D 000004C5 R	                DEC row
 				                invoke SetDirection, 1, 0, 0, 0
 				            .ENDIF
 				        .ENDIF     
 				        
- 000002FE  B4 00		        mov ah, 0
+ 000004C4  B4 00		        mov ah, 0
 				        INVOKE GetKeyState, VK_LEFT
 				        .IF ah && col > 1 || pacmanMov.left
 				            invoke isHurdle, col, row, -1, 0
 				            .IF ah 
- 00000336  FE 0D 000004C4 R	                DEC col
+ 000004FC  FE 0D 000004C4 R	                DEC col
 				                invoke SetDirection, 0, 0, 1, 0                
 				            .ENDIF
 				        .ENDIF  
 
- 00000349  B4 00		        mov ah, 0
+ 0000050F  B4 00		        mov ah, 0
 				        INVOKE GetKeyState, VK_RIGHT
 				        .IF ah && col < mapCol || pacmanMov.right
 				            invoke isHurdle, col, row, 1, 0
 				            .IF ah
- 00000381  FE 05 000004C4 R	                INC col
+ 00000547  FE 05 000004C4 R	                INC col
 				                invoke SetDirection, 0, 0, 0, 1                
 				            .ENDIF
 
 				        .ENDIF     
 				        
 				        .IF col == 0
- 0000039D  B4 34		            mov ah, mapCol - 1
- 0000039F  88 25 000004C4 R	            mov col, ah
+ 00000563  B4 34		            mov ah, mapCol - 1
+ 00000565  88 25 000004C4 R	            mov col, ah
 				        .ELSEIF col == mapCol - 1
- 000003B0  C6 05 000004C4 R	            mov col, 0
+ 00000576  C6 05 000004C4 R	            mov col, 0
 	   00
 				        .ENDIF
 				        
- 000003B7  C3			        ret
- 000003B8			    keySync ENDP
+ 0000057D  C3			        ret
+ 0000057E			    keySync ENDP
 
- 000003B8			    printMap PROC
- 000003B8  B2 00		        mov dl, 0   ; row
- 000003BA  B6 00		        mov dh, 0   ; col
+ 0000057E			    printMap PROC
+ 0000057E  B2 00		        mov dl, 0   ; row
+ 00000580  B6 00		        mov dh, 0   ; col
 				               
 				        .WHILE dl != mapRow
 				            .WHILE dh != mapCol
 				                    invoke getArrayVal, dl, dh      ; return char in al                  
- 000003CB  E8 00000000 E	                    call WriteChar
- 000003D0  FE C6		                    INC dh
+ 00000591  E8 00000000 E	                    call WriteChar
+ 00000596  FE C6		                    INC dh
 				            .ENDW
- 000003D7  B6 00		            mov dh, 0
- 000003D9  E8 00000000 E	            call Crlf
- 000003DE  FE C2		            inc dl
+ 0000059D  B6 00		            mov dh, 0
+ 0000059F  E8 00000000 E	            call Crlf
+ 000005A4  FE C2		            inc dl
 				        .ENDW
- 000003E5  C3			        ret
- 000003E6			    printMap ENDP
+ 000005AB  C3			        ret
+ 000005AC			    printMap ENDP
 				    
- 000003E6			    main PROC
- 000003E6  E8 FFFFFFCD		        call printMap
- 000003EB			        forever:      
- 000003EB  E8 FFFFFC88		            call loadEnemy
- 000003F0  E8 FFFFFE73		            call keySync          ; sync keyboard
- 000003F5  E8 FFFFFDFB		            call currentItem      ; Check for . and increase score
+ 000005AC			    main PROC
+ 000005AC  E8 FFFFFFCD		        call printMap
+ 000005B1			        forever:      
+ 000005B1  E8 FFFFFC77		            call loadEnemy2
+ 000005B6  E8 FFFFFAE4		            call loadEnemy
+ 000005BB  E8 FFFFFE6E		            call keySync          ; sync keyboard
+ 000005C0  E8 FFFFFDF6		            call currentItem      ; Check for . and increase score
 				            
 				            mGotoxy col, row
- 000003FA  52		     1		push edx
- 000003FB  8A 35 000004C5 R  1	    mov  dh,row
- 00000401  8A 15 000004C4 R  1	    mov  dl,col
- 00000407  E8 00000000 E     1		call Gotoxy
- 0000040C  5A		     1		pop  edx
+ 000005C5  52		     1		push edx
+ 000005C6  8A 35 000004C5 R  1	    mov  dh,row
+ 000005CC  8A 15 000004C4 R  1	    mov  dl,col
+ 000005D2  E8 00000000 E     1		call Gotoxy
+ 000005D7  5A		     1		pop  edx
 				            .IF specialPower == 0
- 00000416  A0 000004DE R	                mov  al,pacman     
+ 000005E1  A0 000004E4 R	                mov  al,pacman     
 				            .ELSEIF
- 0000041D  B0 01		                mov al, 1
- 0000041F  FE 0D 000004CB R	                DEC specialPower
+ 000005E8  B0 01		                mov al, 1
+ 000005EA  FE 0D 000004CB R	                DEC specialPower
 				            .ENDIF
- 00000425  E8 00000000 E	            call WriteChar  ; print out pacman
+ 000005F0  E8 00000000 E	            call WriteChar  ; print out pacman
 				    
 				            invoke Sleep, speed
 				            
-				            mGotoxy enemy.col, enemy.row            
- 00000435  52		     1		push edx
- 00000436  8A 35 000004D5 R  1	    mov  dh,enemy.row
- 0000043C  8A 15 000004D4 R  1	    mov  dl,enemy.col
- 00000442  E8 00000000 E     1		call Gotoxy
- 00000447  5A		     1		pop  edx
- 00000448  B0 20		            mov  al,' '     
- 0000044A  E8 00000000 E	            call WriteChar
+				            mGotoxy enemy2.col, enemy2.row            
+ 00000600  52		     1		push edx
+ 00000601  8A 35 000004DB R  1	    mov  dh,enemy2.row
+ 00000607  8A 15 000004DA R  1	    mov  dl,enemy2.col
+ 0000060D  E8 00000000 E     1		call Gotoxy
+ 00000612  5A		     1		pop  edx
+ 00000613  B0 20		            mov  al,' '     
+ 00000615  E8 00000000 E	            call WriteChar
+				            mGotoxy enemy2.col, enemy2.row 
+ 0000061A  52		     1		push edx
+ 0000061B  8A 35 000004DB R  1	    mov  dh,enemy2.row
+ 00000621  8A 15 000004DA R  1	    mov  dl,enemy2.col
+ 00000627  E8 00000000 E     1		call Gotoxy
+ 0000062C  5A		     1		pop  edx
+				            invoke getArrayVal, enemy2.row, enemy2.col      ; return char in al                  
+ 0000063E  E8 00000000 E	            call WriteChar 
 				            
+				            mGotoxy enemy.col, enemy.row            
+ 00000643  52		     1		push edx
+ 00000644  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 0000064A  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 00000650  E8 00000000 E     1		call Gotoxy
+ 00000655  5A		     1		pop  edx
+ 00000656  B0 20		            mov  al,' '     
+ 00000658  E8 00000000 E	            call WriteChar
 				            mGotoxy enemy.col, enemy.row 
- 0000044F  52		     1		push edx
- 00000450  8A 35 000004D5 R  1	    mov  dh,enemy.row
- 00000456  8A 15 000004D4 R  1	    mov  dl,enemy.col
- 0000045C  E8 00000000 E     1		call Gotoxy
- 00000461  5A		     1		pop  edx
+ 0000065D  52		     1		push edx
+ 0000065E  8A 35 000004D5 R  1	    mov  dh,enemy.row
+ 00000664  8A 15 000004D4 R  1	    mov  dl,enemy.col
+ 0000066A  E8 00000000 E     1		call Gotoxy
+ 0000066F  5A		     1		pop  edx
 				            invoke getArrayVal, enemy.row, enemy.col      ; return char in al                  
- 00000473  E8 00000000 E	            call WriteChar            
+ 00000681  E8 00000000 E	            call WriteChar            
 				            
 				            mGotoxy col, row
- 00000478  52		     1		push edx
- 00000479  8A 35 000004C5 R  1	    mov  dh,row
- 0000047F  8A 15 000004C4 R  1	    mov  dl,col
- 00000485  E8 00000000 E     1		call Gotoxy
- 0000048A  5A		     1		pop  edx
- 0000048B  B0 20		            mov  al,' '     
- 0000048D  E8 00000000 E	            call WriteChar
+ 00000686  52		     1		push edx
+ 00000687  8A 35 000004C5 R  1	    mov  dh,row
+ 0000068D  8A 15 000004C4 R  1	    mov  dl,col
+ 00000693  E8 00000000 E     1		call Gotoxy
+ 00000698  5A		     1		pop  edx
+ 00000699  B0 20		            mov  al,' '     
+ 0000069B  E8 00000000 E	            call WriteChar
 				            
 				            mGotoxy 60, 10
- 00000492  52		     1		push edx
- 00000493  B6 0A	     1	    mov  dh,10
- 00000495  B2 3C	     1	    mov  dl,60
- 00000497  E8 00000000 E     1		call Gotoxy
- 0000049C  5A		     1		pop  edx
+ 000006A0  52		     1		push edx
+ 000006A1  B6 0A	     1	    mov  dh,10
+ 000006A3  B2 3C	     1	    mov  dl,60
+ 000006A5  E8 00000000 E     1		call Gotoxy
+ 000006AA  5A		     1		pop  edx
 				            mWrite "Score:" 
- 000004E1		     1		.data				
- 000004E1 53 63 6F 72 65     1		??0001 BYTE "Score:",0		
+ 000004E9		     1		.data				
+ 000004E9 53 63 6F 72 65     1		??0002 BYTE "Score:",0		
 	   3A 00
- 0000049D		     1		.code
- 0000049D  52		     1		push edx
- 0000049E  BA 000004E1 R     1		mov  edx,OFFSET ??0001
- 000004A3  E8 00000000 E     1		call Writestring
- 000004A8  5A		     1		pop  edx
- 000004A9  A1 000004C6 R	            mov eax, score
- 000004AE  E8 00000000 E	            call WriteInt
+ 000006AB		     1		.code
+ 000006AB  52		     1		push edx
+ 000006AC  BA 000004E9 R     1		mov  edx,OFFSET ??0002
+ 000006B1  E8 00000000 E     1		call Writestring
+ 000006B6  5A		     1		pop  edx
+ 000006B7  A1 000004C6 R	            mov eax, score
+ 000006BC  E8 00000000 E	            call WriteInt
 				            
 				            
- 000004B3  E9 FFFFFF33		        jmp forever
- 000004B8  C3			        ret
- 000004B9			    main ENDP
+ 000006C1  E9 FFFFFEEB		        jmp forever
+ 000006C6  C3			        ret
+ 000006C7			    main ENDP
 				END main
-Microsoft (R) Macro Assembler Version 6.15.8803		    08/26/15 23:24:14
+Microsoft (R) Macro Assembler Version 6.15.8803		    08/28/15 01:01:27
 Pacman.asm						     Symbols 2 - 1
 
 
@@ -698,8 +824,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 000004E8 DWord	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000004B9 DWord	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000004F0 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000006C7 DWord	  Public  'CODE'	
 
 
 Procedures,  parameters and locals:
@@ -767,8 +893,13 @@ WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-currentItem  . . . . . . . . . .	P Near	 000001F5 _TEXT	Length= 0000004C Public STDCALL
-enemyDirection . . . . . . . . .	P Near	 00000051 _TEXT	Length= 00000027 Public STDCALL
+currentItem  . . . . . . . . . .	P Near	 000003BB _TEXT	Length= 0000004C Public STDCALL
+enemy2Direction  . . . . . . . .	P Near	 00000051 _TEXT	Length= 00000027 Public STDCALL
+  up . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  down . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  left . . . . . . . . . . . . .	Byte	 bp + 00000010
+  right  . . . . . . . . . . . .	Byte	 bp + 00000014
+enemyDirection . . . . . . . . .	P Near	 00000078 _TEXT	Length= 00000027 Public STDCALL
   up . . . . . . . . . . . . . .	Byte	 bp + 00000008
   down . . . . . . . . . . . . .	Byte	 bp + 0000000C
   left . . . . . . . . . . . . .	Byte	 bp + 00000010
@@ -781,13 +912,13 @@ isHurdle . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 0000001E Public 
   r  . . . . . . . . . . . . . .	Byte	 bp + 0000000C
   colAdd . . . . . . . . . . . .	Byte	 bp + 00000010
   rowAdd . . . . . . . . . . . .	Byte	 bp + 00000014
-keySync  . . . . . . . . . . . .	P Near	 00000268 _TEXT	Length= 00000150 Public STDCALL
-loadEnemy  . . . . . . . . . . .	P Near	 00000078 _TEXT	Length= 0000017D Public STDCALL
-  weNeedRes  . . . . . . . . . .	L Near	 0000012A _TEXT	
-main . . . . . . . . . . . . . .	P Near	 000003E6 _TEXT	Length= 000000D3 Public STDCALL
-  forever  . . . . . . . . . . .	L Near	 000003EB _TEXT	
-printMap . . . . . . . . . . . .	P Near	 000003B8 _TEXT	Length= 0000002E Public STDCALL
-setDirection . . . . . . . . . .	P Near	 00000241 _TEXT	Length= 00000027 Public STDCALL
+keySync  . . . . . . . . . . . .	P Near	 0000042E _TEXT	Length= 00000150 Public STDCALL
+loadEnemy2 . . . . . . . . . . .	P Near	 0000022D _TEXT	Length= 0000018E Public STDCALL
+loadEnemy  . . . . . . . . . . .	P Near	 0000009F _TEXT	Length= 0000018E Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 000005AC _TEXT	Length= 0000011B Public STDCALL
+  forever  . . . . . . . . . . .	L Near	 000005B1 _TEXT	
+printMap . . . . . . . . . . . .	P Near	 0000057E _TEXT	Length= 0000002E Public STDCALL
+setDirection . . . . . . . . . .	P Near	 00000407 _TEXT	Length= 00000027 Public STDCALL
   up . . . . . . . . . . . . . .	Byte	 bp + 00000008
   down . . . . . . . . . . . . .	Byte	 bp + 0000000C
   left . . . . . . . . . . . . .	Byte	 bp + 00000010
@@ -798,8 +929,9 @@ Symbols:
 
                 N a m e                 Type     Value    Attr
 
-??0000 . . . . . . . . . . . . .	Byte	 000004DF _DATA	
-??0001 . . . . . . . . . . . . .	Byte	 000004E1 _DATA	
+??0000 . . . . . . . . . . . . .	Byte	 000004E5 _DATA	
+??0001 . . . . . . . . . . . . .	Byte	 000004E7 _DATA	
+??0002 . . . . . . . . . . . . .	Byte	 000004E9 _DATA	
 @CodeSize  . . . . . . . . . . .	Number	 00000000h   
 @DataSize  . . . . . . . . . . .	Number	 00000000h   
 @Interface . . . . . . . . . . .	Number	 00000003h   
@@ -877,6 +1009,7 @@ blue . . . . . . . . . . . . . .	Number	 00000001h
 brown  . . . . . . . . . . . . .	Number	 00000006h   
 col  . . . . . . . . . . . . . .	Byte	 000004C4 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
+enemy2 . . . . . . . . . . . . .	elementInfo  000004DA _DATA	
 enemy  . . . . . . . . . . . . .	elementInfo  000004D4 _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
@@ -893,16 +1026,15 @@ mapRow . . . . . . . . . . . . .	Number	 00000017h
 map  . . . . . . . . . . . . . .	Byte	 00000000 _DATA	
 maxCol . . . . . . . . . . . . .	Number	 0000004Fh   
 maxRow . . . . . . . . . . . . .	Number	 00000016h   
-noOfEnemy  . . . . . . . . . . .	Number	 00000004h   
 pacmanMov  . . . . . . . . . . .	movement  000004D0 _DATA	
-pacman . . . . . . . . . . . . .	Byte	 000004DE _DATA	
+pacman . . . . . . . . . . . . .	Byte	 000004E4 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
 row  . . . . . . . . . . . . . .	Byte	 000004C5 _DATA	
 score  . . . . . . . . . . . . .	DWord	 000004C6 _DATA	
 specialPowerLimit  . . . . . . .	Byte	 000004CA _DATA	
 specialPower . . . . . . . . . .	Byte	 000004CB _DATA	
 speed  . . . . . . . . . . . . .	DWord	 000004CC _DATA	
-tmp  . . . . . . . . . . . . . .	DWord	 000004DA _DATA	
+tmp  . . . . . . . . . . . . . .	DWord	 000004E0 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
