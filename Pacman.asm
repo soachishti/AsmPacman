@@ -43,6 +43,16 @@ enemyInfo ENDS
     include enemyControl.asm
     
     main PROC       
+    
+        call ClrScr
+        mGotoxy 30, 9
+        mWrite "Pacman using MASM"
+        mGotoxy 30, 10
+        mWrite "Developer: soachishti"
+        mGotoxy 50, 20
+        call WaitMsg
+        call ClrScr
+
         call initEnemy
         call printMap
         forever:      

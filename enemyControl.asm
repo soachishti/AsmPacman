@@ -55,7 +55,15 @@
             .IF enemy[edx].col == al && enemy[edx].row == ah
                 .IF specialPower != 0 
                     ; If collide with enemy and you have special power
-                    mov score, 100
+                    add score, 100
+                    
+                    mov al,enemy[edx].col
+                    mov ah,enemy[edx].row  
+            
+                    mGotoxy al, ah 
+                    mov  al,' '     
+                    call WriteChar
+                    
                     mov enemy[edx].col, 23
                     mov enemy[edx].row, 9
                     mov enemy[edx].delay, 50
