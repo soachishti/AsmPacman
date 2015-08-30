@@ -24,371 +24,40 @@ movement STRUCT
     right BYTE 0
 movement ENDS
 
-elementInfo STRUCT
-    col BYTE 26
-    row BYTE 9
-    up BYTE 0
-    down BYTE 0
-    left BYTE 0
-    right BYTE 1
-elementInfo ENDS
+enemyInfo STRUCT
+    col     BYTE 26
+    row     BYTE 9
+    up      BYTE 0
+    down    BYTE 0
+    left    BYTE 0
+    right   BYTE 1
+    delay   WORD 0
+    hrow     BYTE 26
+    hcol     BYTE 9
+enemyInfo ENDS
 
 .data
-    map BYTE "+---------------------------------------------------+"
-        BYTE "| . . . . . .  . . . . . . . . .  .  . . . . . . .  |"
-        BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
-        BYTE "| o |      | . |      | . | . |      | . |      | o |"
-        BYTE "| . +------+ . +------+ . | . +------+ . +------+ . |"
-        BYTE "| . . . . .  . . . . . . . . . . . . . . . . . . .  |"
-        BYTE "| . -------- . | . -------+------- . | . -------- . |"
-        BYTE "| . . . . .  . . . . . .  | . . . .  . . . . . . .  |"
-        BYTE "+----------+ . +-------   |   -------+ . +----------+"
-        BYTE "           | . |                     | . |           "
-        BYTE "-----------+ . |   +-------------+   | . +-----------"
-        BYTE "  . . . . . .      |    A A A    |     . . . . . . . "
-        BYTE "-----------+ . |   +-------------+   | . +-----------"
-        BYTE "           | . |          @          | . |           "
-        BYTE "+----------+ . |   -------+-------   | . +----------+"
-        BYTE "| . . . . . . . . . . . . | . . . . . . . . . . . . |"
-        BYTE "| . -------+ . -------- . | . -------  . +------- . |"
-        BYTE "| . . . .  | . . . . . . . . . . . . | . . . . . .  |"
-        BYTE "+------- . | . | . ---------------   | . |   -------+"
-        BYTE "| . . . . . . .| . . . . . . . . . . | . . . . . .  |"
-        BYTE "| o -----------+------- . | . -------+----------- o |"
-        BYTE "| . . . . . . . . . . . . | . . . . . . . . . . .   |"
-        BYTE "+---------------------------------------------------+", 0 
-        
-    mapRow EQU 23
-    mapCol EQU 53
-    
-    col     BYTE 26
-    row     BYTE 13    
-    score    DWORD 0    
-    specialPowerLimit BYTE 100  ; total iteration counter for power
-    specialPower BYTE ?       ;  
-    speed DWORD 50
-    pacmanMov movement <1,0,0,0>
-    
-    enemy elementInfo <26,9,0,0,0,1>    
-    enemy2 elementInfo <26,9,0,0,1,0>    
-    tmp DWORD 0
-    pacman BYTE '@'
+    include data.asm
 .code 
-
-    getArrayVal PROC, x:BYTE, y:BYTE
-        mov eax, 0
-        mov al, x      ; ROW
-        mov bl, mapCol  ; TOTAL ROW
-        mul bl
-        movsx bx, y
-        add ax, bx      ; RESULT + COL
-          
-        mov al, map[eax]         
-        
-        .IF al != '|' && al != '-' && al != '+'  
-            mov ah, 1
-        .ELSE 
-            mov ah, 0
-        .ENDIF
-        
-        ret
-    getArrayVal ENDP    
+    include PacmanControl.asm
+    include enemyControl.asm
     
-    isHurdle PROC, co:BYTE, r:BYTE, colAdd:BYTE, rowAdd:BYTE
-        mov dl, co
-        mov dh, r
-        
-        add dl, colAdd
-        add dh, rowAdd
-        
-        invoke getArrayVal, dh, dl    ; return character in al and hurdle info in ah 
-        ;.IF ah
-        ;    add dl, colAdd
-            ;add dh, rowAdd
-        ;    invoke getArrayVal, dh, dl            
-        ;.ENDIF
-        ret
-    isHurdle ENDP
-
-    enemy2Direction PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
-        mov al, up
-        mov enemy2.up, al
-
-        mov al, down
-        mov enemy2.down, al
-
-        mov al, left
-        mov enemy2.left, al      
-        
-        mov al, right
-        mov enemy2.right, al        
-        ret
-    enemy2Direction ENDP    
-    
-    enemyDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
-        mov al, up
-        mov enemy.up, al
-
-        mov al, down
-        mov enemy.down, al
-
-        mov al, left
-        mov enemy.left, al      
-        
-        mov al, right
-        mov enemy.right, al        
-        ret
-    enemyDirection ENDP
-   
-    loadEnemy PROC                   
-           .IF enemy.left
-            invoke isHurdle, enemy.col, enemy.row, -1, 0
-            .IF ah
-                DEC enemy.col
-            .ENDIF
-        .ELSEIF enemy.right
-            invoke isHurdle, enemy.col, enemy.row, 1, 0
-            .IF ah
-                INC enemy.col
-            .ENDIF
-        .ELSEIF enemy.up
-            invoke isHurdle, enemy.col, enemy.row, 0, -1
-            .IF ah
-                DEC enemy.row
-            .ENDIF
-        .ELSEIF enemy.down
-            invoke isHurdle, enemy.col, enemy.row, 0, 1
-            .IF ah
-                INC enemy.row
-            .ENDIF
-        .ENDIF    
-        
-        .IF ah == 0         ; Trigger when hurdle is found
-            call Randomize
-            mov  eax,2
-            call RandomRange
-            
-            ; UP DOWN LEFT RIGHT
-            
-            .IF enemy.down == 1
-                .IF eax
-                    invoke enemyDirection, 0,0,1,0 
-                .ELSE
-                    invoke enemyDirection, 0,0,0,1                 
-                .ENDIF
-            .ELSEIF enemy.up == 1
-                .IF eax
-                    invoke enemyDirection, 0,0,1,0 
-                .ELSE
-                    invoke enemyDirection, 0,0,0,1                 
-                .ENDIF
-            .ELSEIF enemy.right == 1
-                .IF eax
-                    invoke enemyDirection, 1,0,0,0 
-                .ELSE
-                    invoke enemyDirection, 0,1,0,0                 
-                .ENDIF
-            .ELSEIF enemy.left == 1
-                .IF eax
-                    invoke enemyDirection, 1,0,0,0 
-                .ELSE
-                    invoke enemyDirection, 0,1,0,0                 
-                .ENDIF
-            .ENDIF
-            
-        .ENDIF
-        
-                    mGotoxy enemy.col, enemy.row            
-            mWrite "A" 
-        
-        
-        ret
-    loadEnemy ENDP
-    
-    
-    
-    loadEnemy2 PROC                   
-           .IF enemy2.left
-            invoke isHurdle, enemy2.col, enemy2.row, -1, 0
-            .IF ah
-                DEC enemy2.col
-            .ENDIF
-        .ELSEIF enemy2.right
-            invoke isHurdle, enemy2.col, enemy2.row, 1, 0
-            .IF ah
-                INC enemy2.col
-            .ENDIF
-        .ELSEIF enemy2.up
-            invoke isHurdle, enemy2.col, enemy2.row, 0, -1
-            .IF ah
-                DEC enemy2.row
-            .ENDIF
-        .ELSEIF enemy2.down
-            invoke isHurdle, enemy2.col, enemy2.row, 0, 1
-            .IF ah
-                INC enemy2.row
-            .ENDIF
-        .ENDIF    
-        
-        .IF ah == 0         ; Trigger when hurdle is found
-            call Randomize
-            mov  eax,2
-            call RandomRange
-            
-            ; UP DOWN LEFT RIGHT
-            
-            .IF enemy2.down == 1
-                .IF eax
-                    invoke enemy2Direction, 0,0,1,0 
-                .ELSE
-                    invoke enemy2Direction, 0,0,0,1                 
-                .ENDIF
-            .ELSEIF enemy2.up == 1
-                .IF eax
-                    invoke enemy2Direction, 0,0,1,0 
-                .ELSE
-                    invoke enemy2Direction, 0,0,0,1                 
-                .ENDIF
-            .ELSEIF enemy2.right == 1
-                .IF eax
-                    invoke enemy2Direction, 1,0,0,0 
-                .ELSE
-                    invoke enemy2Direction, 0,1,0,0                 
-                .ENDIF
-            .ELSEIF enemy2.left == 1
-                .IF eax
-                    invoke enemy2Direction, 1,0,0,0 
-                .ELSE
-                    invoke enemy2Direction, 0,1,0,0                 
-                .ENDIF
-            .ENDIF
-            
-        .ENDIF
-        
-                    mGotoxy enemy2.col, enemy2.row            
-            mWrite "A" 
-        
-        
-        ret
-    loadEnemy2 ENDP
-
-    currentItem PROC
-        mov eax, 0
-        mov al, row      ; ROW
-        mov bl, mapCol  ; TOTAL ROW
-        mul bl
-        movsx bx, col
-        add ax, bx      ; RESULT + 
-        
-        mov bl, map[eax] 
-        .IF bl == '.'
-            mov map[eax] , ' '
-            INC score
-        .ELSEIF bl == 'o'
-            mov map[eax] , ' '
-            mov bl, specialPowerLimit
-            mov specialPower, bl
-        .ENDIF
-        
-        ret
-    currentItem ENDP
-    
-    setDirection PROC, up:BYTE,down:BYTE,left:BYTE,right:BYTE
-        mov al, up
-        mov pacmanMov.up, al
-
-        mov al, down
-        mov pacmanMov.down, al
-
-        mov al, left
-        mov pacmanMov.left, al      
-        
-        mov al, right
-        mov pacmanMov.right, al        
-        
-        ret
-    setDirection ENDP
-        
-    keySync PROC
-        mov ah, 0
-        INVOKE GetKeyState, VK_DOWN
-        .IF ah && row < mapRow - 1 || pacmanMov.down
-            invoke isHurdle, col, row, 0, 1
-            .IF ah
-                INC row
-                invoke SetDirection, 0, 1, 0, 0
-            .ENDIF 
-        .ENDIF
-
-        mov ah, 0
-        INVOKE GetKeyState, VK_UP
-        .IF ah && row > 1 || pacmanMov.up
-            invoke isHurdle, col, row, 0, -1
-            .IF ah 
-                DEC row
-                invoke SetDirection, 1, 0, 0, 0
-            .ENDIF
-        .ENDIF     
-        
-        mov ah, 0
-        INVOKE GetKeyState, VK_LEFT
-        .IF ah && col > 1 || pacmanMov.left
-            invoke isHurdle, col, row, -1, 0
-            .IF ah 
-                DEC col
-                invoke SetDirection, 0, 0, 1, 0                
-            .ENDIF
-        .ENDIF  
-
-        mov ah, 0
-        INVOKE GetKeyState, VK_RIGHT
-        .IF ah && col < mapCol || pacmanMov.right
-            invoke isHurdle, col, row, 1, 0
-            .IF ah
-                INC col
-                invoke SetDirection, 0, 0, 0, 1                
-            .ENDIF
-
-        .ENDIF     
-        
-        .IF col == 0
-            mov ah, mapCol - 1
-            mov col, ah
-        .ELSEIF col == mapCol - 1
-            mov col, 0
-        .ENDIF
-        
-        ret
-    keySync ENDP
-
-    printMap PROC
-        mov dl, 0   ; row
-        mov dh, 0   ; col
-               
-        .WHILE dl != mapRow
-            .WHILE dh != mapCol
-                    invoke getArrayVal, dl, dh      ; return char in al                  
-                    call WriteChar
-                    INC dh
-            .ENDW
-            mov dh, 0
-            call Crlf
-            inc dl
-        .ENDW
-        ret
-    printMap ENDP
-    
-    main PROC
+    main PROC       
+        call initEnemy
         call printMap
         forever:      
-            call loadEnemy2
             call loadEnemy
+            call enemyCollide
+            .IF al
+                jmp GameOver
+            .ENDIF
+            
             call keySync          ; sync keyboard
             call currentItem      ; Check for . and increase score
             
             mGotoxy col, row
             .IF specialPower == 0
-                mov  al,pacman     
+                mov al,pacman     
             .ELSEIF
                 mov al, 1
                 DEC specialPower
@@ -396,20 +65,8 @@ elementInfo ENDS
             call WriteChar  ; print out pacman
     
             invoke Sleep, speed
-            
-            mGotoxy enemy2.col, enemy2.row            
-            mov  al,' '     
-            call WriteChar
-            mGotoxy enemy2.col, enemy2.row 
-            invoke getArrayVal, enemy2.row, enemy2.col      ; return char in al                  
-            call WriteChar 
-            
-            mGotoxy enemy.col, enemy.row            
-            mov  al,' '     
-            call WriteChar
-            mGotoxy enemy.col, enemy.row 
-            invoke getArrayVal, enemy.row, enemy.col      ; return char in al                  
-            call WriteChar            
+                    
+            call eraseEnemy
             
             mGotoxy col, row
             mov  al,' '     
@@ -419,9 +76,40 @@ elementInfo ENDS
             mWrite "Score:" 
             mov eax, score
             call WriteInt
+
+            mGotoxy 60, 11
+            mWrite "Food Eaten:" 
+            mov eax, foodEaten
+            call Writeint
             
+            .IF foodEaten == 220
+                jmp YouWin
+            .ENDIF
             
         jmp forever
+        
+        GameOver:
+            call ClrScr
+            mGotoxy 35, 10
+            mWrite "Game Over"
+            ret
+
+        YouWin:
+            call ClrScr
+            mGotoxy 35, 7
+            mWrite "You Win"
+            
+            mGotoxy 35, 10
+            mWrite "Score:" 
+            mov eax, score
+            call WriteInt
+
+            mGotoxy 35, 11
+            mWrite "Food Eaten:" 
+            mov eax, foodEaten
+            call Writeint
+            ret
+        
         ret
     main ENDP
 END main
