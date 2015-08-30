@@ -8,8 +8,8 @@ Pacman in Assembly (MASM 6.15)
 
 ![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman002.png)
 
-![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman003.png)
-
 ![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman004.png)
 
 ![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman005.png)
+
+![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman003.png)
