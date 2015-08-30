@@ -13,3 +13,7 @@ Pacman in Assembly (MASM 6.15)
 ![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman005.png)
 
 ![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/Pacman003.png)
+
+#### Pacman Map was taken from internet
+
+![Pacman](https://github.com/soachishti/AsmPacman/raw/master/Screenshots/MapImageFromInternet.jpg)
